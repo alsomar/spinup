@@ -2,7 +2,7 @@
 module ASM_Extensions
   module SpinUp
 
-    def apply_spinup
+    def self.apply_spinup
       model = Sketchup.active_model
       entities = model.entities
 
@@ -11,7 +11,7 @@ module ASM_Extensions
       list = ["", "X|Y|Z"]
 
       begin
-        input = UI.inputbox(prompts, defaults, list, "Enter Rotation Angle and Axis")
+        input = UI.inputbox(prompts, defaults, list, "SpinUp! Enter Rotation Angle and Axis")
         degrees = Integer(input[0])
         axis = input[1]
 
@@ -24,6 +24,11 @@ module ASM_Extensions
           Z_AXIS
         else
           raise ArgumentError, "Invalid rotation axis"
+        end
+
+        if model.selection.empty?
+          UI.messagebox("Nothing selected")
+          return
         end
 
         model.start_operation("SpinUp", true)
@@ -39,12 +44,11 @@ module ASM_Extensions
       end
     end # apply_spinup
 
-  end # module SpinUp
-
-  unless file_loaded?(__FILE__)
+    unless file_loaded?(__FILE__)
     menu = UI.menu("Extensions")
-    menu.add_item("SpinUp") { SpinUp.apply_spinup }
+    menu.add_item("SpinUp") { ASM_Extensions::SpinUp.apply_spinup }
     file_loaded(__FILE__)
-  end
+    end
 
+  end # module SpinUp
 end # module ASM_Extensions
