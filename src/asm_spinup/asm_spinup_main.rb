@@ -11,8 +11,8 @@ module ASM_Extensions
       list = ["", "X|Y|Z"]
 
       begin
-        input = UI.inputbox(prompts, defaults, list, "SpinUp! Enter Rotation Angle and Axis")
-        degrees = Integer(input[0])
+        input = UI.inputbox(prompts, defaults, list, "SpinUp!")
+        degrees = input[0].to_f
         axis = input[1]
 
         rotation_axis = case axis.upcase
@@ -31,8 +31,14 @@ module ASM_Extensions
           return
         end
 
+        selection = model.selection.to_a
+        groups_and_components = selection.select { |e| e.is_a?(Sketchup::Group) || e.is_a?(Sketchup::ComponentInstance) }
+        if selection.size != groups_and_components.size
+          UI.messagebox("Some selected objects are not groups or components and will not be rotated")
+        end
+
         model.start_operation("SpinUp", true)
-        model.selection.each do |selected|
+        groups_and_components.each do |selected|
           rotation = Geom::Transformation.rotation(selected.bounds.center, rotation_axis, degrees.degrees)
           selected.transform!(rotation)
         end
@@ -45,9 +51,9 @@ module ASM_Extensions
     end # apply_spinup
 
     unless file_loaded?(__FILE__)
-    menu = UI.menu("Extensions")
-    menu.add_item("SpinUp") { ASM_Extensions::SpinUp.apply_spinup }
-    file_loaded(__FILE__)
+      menu = UI.menu("Extensions")
+      menu.add_item("SpinUp") { ASM_Extensions::SpinUp.apply_spinup }
+      file_loaded(__FILE__)
     end
 
   end # module SpinUp

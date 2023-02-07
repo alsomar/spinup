@@ -5,7 +5,7 @@ module ASM_Extensions
 
     # Variables
     PLUGIN_NAME = 'SpinUp'.freeze
-    PLUGIN_VERSION = '1.0.1'.freeze
+    PLUGIN_VERSION = '1.0.2'.freeze
     PLUGIN_DESCRIPTION = 'Rotate multiple components or groups around their positions.'.freeze
     PLUGIN_AUTHOR = 'Alejandro Soriano'.freeze
     PLUGIN_ID = File.basename(__FILE__, '.rb')
