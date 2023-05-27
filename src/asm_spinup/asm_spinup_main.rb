@@ -1,60 +1,33 @@
-#Please see the loader file for information on the license and author info.
+# Please see the loader file for information on the license and author info.
 module ASM_Extensions
   module SpinUp
+    require FILE_DATA
 
-    def self.apply_spinup
-      model = Sketchup.active_model
-      entities = model.entities
+    ICON_EXT = Sketchup.platform == :platform_win ? 'svg' : 'pdf'
 
-      prompts = ["Rotation Angle (degrees): ", "Rotation Axis (X/Y/Z): "]
-      defaults = [45, "Z"]
-      list = ["", "X|Y|Z"]
-
-      begin
-        input = UI.inputbox(prompts, defaults, list, "SpinUp!")
-        degrees = input[0].to_f
-        axis = input[1]
-
-        rotation_axis = case axis.upcase
-        when "X"
-          X_AXIS
-        when "Y"
-          Y_AXIS
-        when "Z"
-          Z_AXIS
-        else
-          raise ArgumentError, "Invalid rotation axis"
-        end
-
-        if model.selection.empty?
-          UI.messagebox("Nothing selected")
-          return
-        end
-
-        selection = model.selection.to_a
-        groups_and_components = selection.select { |e| e.is_a?(Sketchup::Group) || e.is_a?(Sketchup::ComponentInstance) }
-        if selection.size != groups_and_components.size
-          UI.messagebox("Some selected objects are not groups or components and will not be rotated")
-        end
-
-        model.start_operation("SpinUp", true)
-        groups_and_components.each do |selected|
-          rotation = Geom::Transformation.rotation(selected.bounds.center, rotation_axis, degrees.degrees)
-          selected.transform!(rotation)
-        end
-        model.commit_operation
-
-      rescue ArgumentError
-        UI.messagebox("Invalid angle")
-        retry
-      end
-    end # apply_spinup
-
-    unless file_loaded?(__FILE__)
-      menu = UI.menu("Extensions")
-      menu.add_item("SpinUp") { ASM_Extensions::SpinUp.apply_spinup }
-      file_loaded(__FILE__)
+    def self.icon(basename)
+      File.join(PATH_ICON, "#{basename}.#{ICON_EXT}")
     end
 
+    # Add Toolbar
+    toolbar = UI::Toolbar.new "SpinUp"
+
+    # Button for SpinUp
+    cmd_axes = UI::Command.new("SpinUp") {
+      ASM_Extensions::SpinUp.apply_spinup
+    }
+    cmd_axes.tooltip = "SpinUp"
+    cmd_axes.status_bar_text = "Rotate multiple components or groups in place"
+    cmd_axes.small_icon = self.icon("asm_spinup_16")
+    cmd_axes.large_icon = self.icon("asm_spinup_24")
+    toolbar = toolbar.add_item cmd_axes
+
+    toolbar.show
   end # module SpinUp
+
+  unless defined?(@spinup_loaded)
+    UI.menu("Extensions").add_item("SpinUp") { ASM_Extensions::SpinUp.apply_spinup }
+    @spinup_loaded = true
+  end
+
 end # module ASM_Extensions
